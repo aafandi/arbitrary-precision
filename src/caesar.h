@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-// Lower case: 97-122
-
 class Caesar {
     private:
         std::string plaintext_string;
@@ -69,6 +67,10 @@ class Caesar {
 
         // Setters
         void set_plaintext_string(std::string s);
+
+        // Encryption method
+
+        std::string encrypt();
 };
 
 
