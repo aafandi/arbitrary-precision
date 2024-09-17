@@ -3,6 +3,20 @@
 
 #include <string>
 
-std::string caesar(std::string s);
+class caesar {
+    private:
+        std::string encryptedString;
+    
+    public:
+        caesar(std::string s) {
+            encryptedString = s;
+        }
+
+        // Getter
+        std::string getEncryptedString();
+
+        // Setter
+        void setEncryptedString(std::string s);
+};
 
 #endif
