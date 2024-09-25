@@ -124,7 +124,7 @@ LargeInteger LargeInteger::operator+(const LargeInteger &rhs) const {
 
     // Edge cases, use usual addition
 
-   if (*size_1 <= 14 && (*size_2 <= 3)) {
+   if ((*size_1) <= 14 && (*size_2 <= 3)) {
     long long int *sumPtr {nullptr};
     sumPtr = new long long int;
 
@@ -135,22 +135,30 @@ LargeInteger LargeInteger::operator+(const LargeInteger &rhs) const {
     delete summand_1;
     delete summand_2;
     delete carrier;
+    delete sumPtr;
     return L;
    }
 
    // Assume size_1 >= 15, size_2 >= 4:
 
-   *summand_2 = string_of_zeroes(*size_1 - *size_2) + rhs.string_representation;
+   *summand_2 = string_of_zeroes(*size_1 - *size_2) + *summand_2;
+
+   
 
     for (int i = 0; i < *size_1; i++) {
-        int *sumPtr {nullptr};
-        sumPtr = new int;
-        *sumPtr = from_char_to_int((*summand_1)[*size_1 - 1 - i]) + from_char_to_int((*summand_2)[*size_1 - 1 - i]) + *carrier;
-        if (std::to_string(*sumPtr).size() == 2) {
-            result += std::to_string(*sumPtr)[1];
+        std::string *sumPtr {nullptr};
+        sumPtr = new std::string;
+        *sumPtr = std::to_string(from_char_to_int((*summand_1)[*size_1 - 1 - i]) + from_char_to_int((*summand_2)[*size_1 - 1 - i]) + *carrier);
+        if (i == *size_1 - 1) {
+            std::reverse((*sumPtr).begin(), (*sumPtr).end());
+            result += *sumPtr;
+            break;
+        }
+        if ((*sumPtr).size() == 2) {
+            result += (*sumPtr)[1];
             *carrier = 1;
         } else {
-            result += std::to_string(*sumPtr);
+            result += *sumPtr;
             *carrier = 0;
         }
     }
@@ -254,6 +262,113 @@ LargeInteger LargeInteger::operator-(const LargeInteger &rhs) const {
         return LargeInteger(no_leading_zeroes(result));
 
     }
+}
+
+LargeInteger LargeInteger::operator*(const LargeInteger &rhs) const {
+    LargeInteger L1 = LargeInteger(string_representation);
+    LargeInteger L2 = LargeInteger(rhs.string_representation);
+
+    if (L1.is_neg() && L2.is_non_neg()) {
+        return -(-(L1) * L2);
+    } else if (L1.is_non_neg() && L2.is_neg()) {
+        return -((-L2) * L1);
+    } else if (L1.is_neg() && L2.is_neg()) {
+        return (-L1) * (-L2);
+    }
+
+    int *size_1 {nullptr}; // size of the integer with more digits
+    size_1 = new int;
+    int *size_2 {nullptr}; // size of the integers with less digits
+    size_2 = new int;
+    std::string *term_1 {nullptr}; // the string with more digits
+    term_1 = new std::string;
+    std::string *term_2 {nullptr}; // the string with less digits
+    term_2 = new std::string;
+    std::vector<std::string> *vecOfSummands {nullptr};
+    vecOfSummands = new std::vector<std::string>;
+    std::string *prodPtr {nullptr};
+    prodPtr = new std::string;
+    int *carrier {nullptr};
+    carrier = new int;
+    *carrier = 0;
+    std::string result = "";
+    LargeInteger L = LargeInteger("0");
+
+    // Code block below sets size_1, size_2, summand_1, and summand_2 correctly
+
+    if (string_representation.size() >= rhs.string_representation.size()) {
+        *size_1 = string_representation.size();
+        *size_2 = rhs.string_representation.size();
+        *term_1 = string_representation;
+        *term_2 = rhs.string_representation;
+    } else {
+        *size_1 = rhs.string_representation.size();
+        *size_2 = string_representation.size();
+        *term_1 = rhs.string_representation;
+        *term_2 = string_representation;
+    }
+
+    // Edge cases: size_1 <= 14, size_2 <= 3:
+
+    if (*size_1 <= 14 && *size_2 <= 3) {
+        delete size_1;
+        delete size_2;
+        delete term_1;
+        delete term_2;
+        delete vecOfSummands;
+        delete prodPtr;
+        delete carrier;
+
+        return LargeInteger(std::to_string(to_base_ten(string_representation) * to_base_ten(rhs.string_representation)));
+    }
+
+    // Put empty strings in vecOfSummands:
+
+    for (int i = 0; i < *size_2; i++) {
+        (*vecOfSummands).push_back("");
+    }
+
+    
+    for (int i = 0; i < *size_2; i++) {
+        for (int j = 0; j < *size_1; j++) {
+            *prodPtr = std::to_string((from_char_to_int((*term_2)[*size_2 - 1 - i]) * from_char_to_int((*term_1)[*size_1 - 1 - j])) + *carrier);
+            if (j == *size_1 - 1) {
+                std::reverse((*prodPtr).begin(), (*prodPtr).end());
+                (*vecOfSummands)[i] += *prodPtr;
+                *carrier = 0;
+                break;
+            }
+            if ((*prodPtr).size() == 2) {
+                (*vecOfSummands)[i] += (*prodPtr)[1];
+                *carrier = from_char_to_int((*prodPtr)[0]);
+            } else {
+                (*vecOfSummands)[i] += (*prodPtr)[0];
+                *carrier = 0;
+            }
+        }
+    }
+    
+
+   
+
+    for (int i = 0; i < *size_2; i++) {
+        std::reverse((*vecOfSummands)[i].begin(), (*vecOfSummands)[i].end());
+    }
+
+    for (int i = 0; i < (*vecOfSummands).size(); i++) {
+        L = L + LargeInteger((*vecOfSummands)[i] + string_of_zeroes(i));
+    }
+    
+
+    delete size_1;
+    delete size_2;
+    delete term_1;
+    delete term_2;
+    delete prodPtr;
+    delete carrier;
+    delete vecOfSummands;
+
+    return L;
 }
 
 bool LargeInteger::operator<(const LargeInteger &rhs) const {

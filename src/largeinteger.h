@@ -36,6 +36,7 @@ class LargeInteger {
         // Overloaded Binary Operators
         LargeInteger operator+(const LargeInteger &rhs) const;
         LargeInteger operator-(const LargeInteger &rhs) const;
+        LargeInteger operator*(const LargeInteger &rhs) const;
         bool operator<(const LargeInteger &rhs) const;
         bool operator==(const LargeInteger &rhs) const;
         bool operator>(const LargeInteger &rhs) const;
