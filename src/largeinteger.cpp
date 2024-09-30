@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 // Getter
 std::string LargeInteger::get_string_representation() {
@@ -66,6 +67,274 @@ std::string LargeInteger::no_leading_zeroes(std::string s) {
     while (result[0] == '0') {
         result = result.substr(1);
     }
+
+    return result;
+}
+
+std::vector<LargeInteger> LargeInteger::quotient(LargeInteger L1, LargeInteger L2) {
+    // Assume L1 >= L2, and that their number of digits differ by at most 1.
+    // This function returns the vector (quotient, remainder)
+
+    std::vector<LargeInteger> result {};
+
+    std::string *quotient_string {nullptr};
+    quotient_string = new std::string;
+
+    int *quotient_numerical {nullptr};
+    quotient_numerical = new int;
+
+    int *q_hat {nullptr};
+    q_hat = new int;
+
+    int *q_hat_calc {nullptr};
+    q_hat_calc = new int;
+
+    std::string *remainder {nullptr};
+    remainder = new std::string;
+
+    int *size_1 {nullptr};
+    size_1 = new int;
+    *size_1 = L1.string_representation.size();
+
+    int *size_2 {nullptr};
+    size_2 = new int;
+    *size_2 = L2.string_representation.size();
+
+    bool *same_number_of_digits {nullptr};
+    same_number_of_digits = new bool;
+    *same_number_of_digits = (L1.string_representation.size() == L2.string_representation.size());
+
+    bool *one_more_digit {nullptr};
+    one_more_digit = new bool;
+    *one_more_digit = (L1.string_representation.size() == L2.string_representation.size() + 1);
+
+    int *first_digit_L1 {nullptr};
+    first_digit_L1 = new int;
+    *first_digit_L1 = from_char_to_int(L1.string_representation[0]);
+
+    int *second_digit_L1 {nullptr};
+    second_digit_L1 = new int;
+    // don't initialize the value of the above pointer, since it's not guaranteeed to exist (yet)
+
+    int *first_digit_L2 {nullptr};
+    first_digit_L2 = new int;
+    *first_digit_L2 = from_char_to_int(L2.string_representation[0]);
+
+    std::string *intermediate_numerator {nullptr};
+    intermediate_numerator = new std::string;
+
+    std::string *intermediate_remainder {nullptr};
+    intermediate_remainder = new std::string;
+
+    // Throw error if inputs are not compatible:
+
+    if ((L1 < L2) || (*size_1 - *size_2 > 1)) {
+        std::cerr << "Inputs are not compatible" << std::endl;
+        return result;
+    }
+
+    // Edge Cases (one digit each, or the same number)
+
+    if ((*size_1 == 1) && (*size_2 == 2)) {
+        *quotient_string = std::to_string(*first_digit_L1 / *first_digit_L2);
+        *remainder = std::to_string(*first_digit_L1 - *first_digit_L2);
+        result.push_back(LargeInteger(*quotient_string));
+        result.push_back(LargeInteger(*remainder));
+        return result;
+    } else if (L1 == L2) {
+        *quotient_string = "1";
+        *remainder = "0";
+        result.push_back(LargeInteger(*quotient_string));
+        result.push_back(LargeInteger(*remainder));
+        return result;
+    }
+
+    // Can now assume that L1 > L2.
+
+    *intermediate_numerator = L1.string_representation.substr(0, *size_2);
+
+    if (*same_number_of_digits) {
+        *quotient_numerical = *first_digit_L1 / *first_digit_L2;
+        *quotient_string = std::to_string(*quotient_numerical);
+        while ((LargeInteger(*quotient_string) * L2) > L1) {
+            *quotient_numerical -= 1;
+            *quotient_string = std::to_string(*quotient_numerical);
+        }
+        *remainder = (L1 - (LargeInteger(*quotient_string) * L2)).string_representation;
+        result.push_back(LargeInteger(*quotient_string));
+        result.push_back(LargeInteger(*remainder));
+    } else if ((*one_more_digit) && (L2 <= LargeInteger(*intermediate_numerator))) {
+        // Deal with the case when the quotient is a two digit number:
+        *quotient_string = quotient(LargeInteger(*intermediate_numerator), L2)[0].string_representation;
+        if (quotient(LargeInteger(*intermediate_numerator), L2)[1].string_representation == "0") {
+            *intermediate_remainder = L1.string_representation[*size_1 - 1];
+        } else {
+            *intermediate_remainder = quotient(LargeInteger(*intermediate_numerator), L2)[1].string_representation + L1.string_representation[*size_1 - 1];
+        }
+        if (L2 > LargeInteger(*intermediate_remainder)) {
+            *quotient_string += "0";
+            *remainder = *intermediate_remainder;
+            result.push_back(LargeInteger(*quotient_string));
+            result.push_back(LargeInteger(*remainder));
+        } else {
+            *quotient_string += quotient(LargeInteger(*intermediate_remainder), L2)[0].string_representation;
+            *remainder = quotient(LargeInteger(*intermediate_remainder), L2)[1].string_representation;
+            result.push_back(LargeInteger(*quotient_string));
+            result.push_back(LargeInteger(*remainder));
+        }
+        
+    } else if ((*one_more_digit) && (L2 > LargeInteger(*intermediate_numerator))) {
+        // q_hat is the candidate quotient, it can be off by at most 2 from the real quotient, see Knuth's Algorithm D
+        *second_digit_L1 = from_char_to_int(L1.string_representation[1]);
+        *q_hat_calc = (((*first_digit_L1) * 10) + (*second_digit_L1)) / ((*first_digit_L2));
+        *q_hat = std::min(*q_hat_calc, 9);
+        while ((L2 * LargeInteger(std::to_string(*q_hat))) > L1) {
+            *q_hat -= 1;
+        }
+        *quotient_string = std::to_string(*q_hat);
+        *remainder = (L1 - (LargeInteger(*quotient_string) * L2)).string_representation;
+        result.push_back(LargeInteger(*quotient_string));
+        result.push_back(LargeInteger(*remainder));
+    }
+
+    delete quotient_string;
+    delete quotient_numerical;
+    delete q_hat;
+    delete q_hat_calc;
+    delete remainder;
+    delete size_1;
+    delete size_2;
+    delete same_number_of_digits;
+    delete one_more_digit;
+    delete first_digit_L1;
+    delete first_digit_L2;
+    delete intermediate_numerator;
+    delete intermediate_remainder;
+
+    return result;
+}
+
+std::vector<LargeInteger> LargeInteger::long_division(LargeInteger L1, LargeInteger L2) {
+    // This computes L1 / L2, and returns the vector (quotient, remainder)
+
+    std::vector<LargeInteger> result {};
+
+    int *size_1 {nullptr};
+    size_1 = new int;
+    *size_1 = L1.string_representation.size();
+
+    int *size_2 {nullptr};
+    size_2 = new int;
+    *size_2 = L2.string_representation.size();
+
+    std::string *intermediate_numerator {nullptr};
+    intermediate_numerator = new std::string;
+
+    std::string *intermediate_remainder {nullptr};
+    intermediate_remainder = new std::string;
+
+    std::string *intermediate_quotient {nullptr};
+    intermediate_quotient = new std::string;
+
+    std::string *quotient_string {nullptr};
+    quotient_string = new std::string;
+    *quotient_string = "";
+
+    std::string *remainder {nullptr};
+    remainder = new std::string;
+
+    // Go through the edge cases:
+    if (L1 < L2) {
+        *quotient_string = "0";
+        *remainder = L1.string_representation;
+        result.push_back(LargeInteger(*quotient_string));
+        result.push_back(LargeInteger(*remainder));
+        return result;
+    } else if (L1 == L2) {
+        *quotient_string = "1";
+        *remainder = "0";
+        result.push_back(LargeInteger(*quotient_string));
+        result.push_back(LargeInteger(*remainder));
+        return result;
+    } else if (*size_1 - *size_2 <= 1) {
+        return quotient(L1, L2);
+    }
+
+    // Can now assume that L1 and L2 differe by at least two digits:
+
+    // First, determine the number of digits of quotient_string, and do the first division
+
+    int *length_of_quotient {nullptr};
+    length_of_quotient = new int;
+
+    if (L2 <= L1.string_representation.substr(0, *size_2)) {
+        *length_of_quotient = (*size_1 - *size_2 + 1);
+        *quotient_string += quotient(L1.string_representation.substr(0, *size_2), L2)[0].string_representation;
+        *intermediate_remainder = quotient(L1.string_representation.substr(0, *size_2), L2)[1].string_representation;
+        if (*intermediate_remainder == "0") {
+            *intermediate_remainder = "";
+        }
+        *intermediate_numerator = *intermediate_remainder + L1.string_representation[*size_2];
+    } else {
+        *length_of_quotient = (*size_1 - *size_2);
+        *quotient_string += quotient(L1.string_representation.substr(0, *size_2 + 1), L2)[0].string_representation;
+        *intermediate_remainder = quotient(L1.string_representation.substr(0, *size_2 + 1), L2)[1].string_representation;
+        if (*intermediate_remainder == "0") {
+            *intermediate_remainder = "";
+        }
+        *intermediate_numerator = *intermediate_remainder + L1.string_representation[*size_2 + 1];
+    }
+
+    // Now iterate through the rest of the division:
+
+    int *offset {nullptr};
+    offset = new int;
+    if (*length_of_quotient == *size_1 - *size_2) {
+        *offset = 1;
+    } else {
+        *offset = 0;
+    }
+
+    for (int i = 1; i < *length_of_quotient; i++) {
+        if (i == *length_of_quotient - 1) {
+            if (L2 > LargeInteger(*intermediate_numerator)) {
+                *quotient_string += "0";
+                *remainder = *intermediate_remainder + L1.string_representation[*size_1 - 1];
+                break;
+            }
+            *quotient_string += quotient(LargeInteger(*intermediate_numerator), L2)[0].string_representation;
+            *remainder = quotient(LargeInteger(*intermediate_numerator), L2)[1].string_representation;
+            break;
+        }
+        if (L2 > LargeInteger(*intermediate_numerator)) {
+            *quotient_string += "0";
+            *intermediate_remainder = *intermediate_numerator;
+            if (*intermediate_remainder == "0") {
+                *intermediate_remainder = "";
+            }
+            *intermediate_numerator = *intermediate_remainder + L1.string_representation[*size_2 + i + *offset];
+            continue;
+        } else {
+            *quotient_string += quotient(LargeInteger(*intermediate_numerator), L2)[0].string_representation;
+            *intermediate_remainder = quotient(LargeInteger(*intermediate_numerator), L2)[1].string_representation;
+            if (*intermediate_remainder == "0") {
+                *intermediate_remainder = "";
+            }
+            *intermediate_numerator = *intermediate_remainder + L1.string_representation[*size_2 + i + *offset];
+        }
+    }
+
+    result.push_back(LargeInteger(*quotient_string));
+    result.push_back(LargeInteger(*remainder));
+
+    delete size_1;
+    delete size_2;
+    delete intermediate_numerator;
+    delete intermediate_remainder;
+    delete intermediate_quotient;
+    delete quotient_string;
+    delete length_of_quotient;
+    delete offset;
 
     return result;
 }
@@ -369,6 +638,123 @@ LargeInteger LargeInteger::operator*(const LargeInteger &rhs) const {
     delete vecOfSummands;
 
     return L;
+}
+
+LargeInteger LargeInteger::operator%(const LargeInteger &rhs) const {
+    LargeInteger L1 = LargeInteger(string_representation);
+    LargeInteger L2 = LargeInteger{rhs.string_representation};
+
+    // Some silly edge cases:
+    if (L2 == (LargeInteger("0"))) {
+        std::cerr << "No division by zero allowed" << std::endl;
+    } else if (L1.is_neg() || L2.is_neg()) {
+        std::cerr << "One of your LargeIntegers is negative. Why would you want to do that?" << std::endl;
+    } else if (L1 == LargeInteger("0")) {
+        return LargeInteger("0");
+    }
+
+    // Check if lhs and rhs are the same, of if the division is trivial:
+
+    if (L1 == L2) {
+        return LargeInteger("0");
+    } else if (L1 < L2) {
+        return L1;
+    }
+
+    // Can now assume lhs > rhs:
+    std::string *numerator {nullptr};
+    numerator = new std::string;
+    std::string *denominator {nullptr};
+    denominator = new std::string;
+    std::string *quotient {nullptr};
+    quotient = new std::string;
+    *quotient = "";
+    int *expected_length_of_quotient {nullptr};
+    expected_length_of_quotient = new int;
+    std::string *remainder {nullptr};
+    remainder = new std::string;
+
+    *numerator = L1.string_representation;
+    *denominator = L2.string_representation;
+
+    // Edge case: numerator and denominator have the same number of digits:
+
+    if ((*numerator).size() == (*denominator).size()) {
+        char *first_digit_numerator {nullptr};
+        first_digit_numerator = new char;
+        *first_digit_numerator = (*numerator)[0];
+        char *first_digit_denominator {nullptr};
+        first_digit_denominator = new char;
+        *first_digit_denominator = (*denominator)[0];
+        std::string *intermediate_mult {nullptr};
+        intermediate_mult = new std::string;
+
+        *quotient += std::to_string(from_char_to_int(*first_digit_numerator)/from_char_to_int(*first_digit_denominator));
+
+        *remainder = (L1 - (LargeInteger(*quotient) * L2)).get_string_representation();
+
+        delete first_digit_numerator;
+        delete first_digit_denominator;
+        delete numerator;
+        delete denominator;
+        delete quotient;
+
+        return LargeInteger(*remainder);
+    }
+
+    // Can now assume numerator has more digits than denominator.
+    // Assume denominator has n digits and numerator has m + n digits
+
+    int *n {nullptr};
+    n = new int;
+    *n = (*denominator).size();
+
+    int *m {nullptr};
+    m = new int;
+    *m = (*numerator).size() - *n;
+
+    // The expected length of the quotient is determined by the nature of the first division:
+    if (L2 <= LargeInteger((L1.string_representation).substr(0, *n))) {
+        *expected_length_of_quotient = *m + 1;
+    } else {
+        *expected_length_of_quotient = *m;
+    }
+
+    // Now perform the initial division:
+
+    
+
+    std::string *intermediate_numerator {nullptr};
+    intermediate_numerator = new std::string;
+    *intermediate_numerator = "";
+
+    // candidate_quotient plays the role of "q-hat" in Knuth's Algorithm D:
+    std::string *candidate_quotient {nullptr};
+    candidate_quotient = new std::string;
+
+    std::string *intermediate_mult {nullptr};
+    intermediate_mult = new std::string;
+
+    std::string *intermediate_quotient {nullptr};
+    intermediate_quotient = new std::string;
+
+    std::string *intermediate_subtr {nullptr};
+    intermediate_subtr = new std::string;
+    
+    delete intermediate_numerator;
+    delete candidate_quotient;
+    delete intermediate_mult;
+    delete intermediate_quotient;
+    delete intermediate_subtr;
+    delete expected_length_of_quotient;
+
+    delete n;
+    delete m;
+    delete numerator;
+    delete denominator;
+
+    return LargeInteger(*quotient);
+
 }
 
 bool LargeInteger::operator<(const LargeInteger &rhs) const {

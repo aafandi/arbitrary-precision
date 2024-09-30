@@ -2,6 +2,7 @@
 #define _LARGEINTEGER_H_
 
 #include <string>
+#include <vector>
 
 class LargeInteger {
     private:
@@ -27,6 +28,8 @@ class LargeInteger {
         static int from_char_to_int(char c);
         static std::string string_of_zeroes(int n);
         static std::string no_leading_zeroes(std::string s);
+        static std::vector<LargeInteger> quotient(LargeInteger L1, LargeInteger L2);
+        static std::vector<LargeInteger> long_division(LargeInteger L1, LargeInteger L2);
 
         // Overloaded Unary Operators
 
@@ -37,6 +40,7 @@ class LargeInteger {
         LargeInteger operator+(const LargeInteger &rhs) const;
         LargeInteger operator-(const LargeInteger &rhs) const;
         LargeInteger operator*(const LargeInteger &rhs) const;
+        LargeInteger operator%(const LargeInteger &rhs) const;
         bool operator<(const LargeInteger &rhs) const;
         bool operator==(const LargeInteger &rhs) const;
         bool operator>(const LargeInteger &rhs) const;
