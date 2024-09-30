@@ -12,6 +12,10 @@ class LargeInteger {
         LargeInteger(std::string s) {
             string_representation = s;
         }
+
+        LargeInteger() {
+            string_representation = "0";
+        }
         // Getter
         std::string get_string_representation();
         // Setter
@@ -30,6 +34,8 @@ class LargeInteger {
         static std::string no_leading_zeroes(std::string s);
         static std::vector<LargeInteger> quotient(LargeInteger L1, LargeInteger L2);
         static std::vector<LargeInteger> long_division(LargeInteger L1, LargeInteger L2);
+        static LargeInteger gcd(LargeInteger L1, LargeInteger L2);
+        static std::vector<LargeInteger> extended_euclidean(LargeInteger L1, LargeInteger L2);
 
         // Overloaded Unary Operators
 

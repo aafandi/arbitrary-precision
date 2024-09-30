@@ -339,6 +339,146 @@ std::vector<LargeInteger> LargeInteger::long_division(LargeInteger L1, LargeInte
     return result;
 }
 
+LargeInteger LargeInteger::gcd(LargeInteger L1, LargeInteger L2) {
+    // Implements the Euclidean algorithm to compute gcd(a, b)
+
+    LargeInteger result;
+    
+    LargeInteger *a {nullptr};
+    a = new LargeInteger;
+
+    LargeInteger *b {nullptr};
+    b = new LargeInteger;
+
+    LargeInteger *numerator {nullptr};
+    numerator = new LargeInteger;
+
+    LargeInteger *denominator {nullptr};
+    denominator = new LargeInteger;
+    
+    std::vector<LargeInteger> *remainders {nullptr};
+    remainders = new std::vector<LargeInteger>;
+
+    // Deal with edge cases, and set a and b:
+
+    if ((L1 == LargeInteger("0")) && (L2 != LargeInteger ("0"))) {
+        return L2;
+    } else if ((L1 != LargeInteger("0")) && (L2 == LargeInteger ("0"))) {
+        return L1;
+    } else if ((L1 != LargeInteger("0")) && (L2 == LargeInteger ("0"))) {
+        return L1;
+    } else if (L1 < L2) {
+        *a = L2;
+        *b = L1;
+    } else if (L1 == L2) {
+        return L1;
+    } else {
+        *a = L1;
+        *b = L2;
+    }
+
+    if (long_division(*a, *b)[1] == LargeInteger("0")) {
+        result = *b;
+        return result;
+    }
+
+    *numerator = *a;
+    *denominator = *b;
+
+    (*remainders).push_back(long_division(*a, *b)[1]);
+
+    while ((*remainders).back() != LargeInteger("0")) {
+        *numerator = *denominator;
+        *denominator = (*remainders).back();
+        (*remainders).push_back(long_division(*numerator, *denominator)[1]);
+    }
+
+    result = (*remainders)[(*remainders).size() - 2];
+
+    delete a;
+    delete b;
+    delete remainders;
+
+    return result;
+}
+
+std::vector<LargeInteger> LargeInteger::extended_euclidean(LargeInteger a, LargeInteger b) {
+    // Implements the extended Euclidean algorithm: returns the vector (gcd(a, b), u, v),
+    // where u and v are integers satisficying au + bv = gcd(a, b), and u is as small as possible
+    // (see Exercise 1.12 in Hoffstein, Pipher, Silverman)
+
+    std::vector<LargeInteger> result {}; 
+
+    if (a == LargeInteger("0") || b == LargeInteger("0")) {
+        for (int i = 0; i < 3; i++) {
+            result.push_back(LargeInteger("0"));
+        }
+        return result;
+    }
+
+    LargeInteger *u {nullptr};
+    u = new LargeInteger;
+
+    LargeInteger *v {nullptr};
+    v = new LargeInteger;
+
+    LargeInteger *g {nullptr};
+    g = new LargeInteger;
+
+    LargeInteger *x {nullptr};
+    x = new LargeInteger;
+
+    LargeInteger *y {nullptr};
+    y = new LargeInteger;
+
+    LargeInteger *s {nullptr};
+    s = new LargeInteger;
+
+    LargeInteger *q {nullptr};
+    q = new LargeInteger;
+
+    LargeInteger *t {nullptr};
+    t = new LargeInteger;
+
+    *u = LargeInteger("1");
+    *g = a;
+    *x = LargeInteger("0");
+    *y = b;
+
+    while (*y != LargeInteger("0")) {
+        *q = long_division(*g, *y)[0];
+        *t = long_division(*g, *y)[1];
+        *s = *u - (*q)*(*x);
+        *u = *x;
+        *g = *y;
+        *x = *s;
+        *y = *t;
+    }
+
+    *v = (*g - (a)*(*u)) / (b);
+
+    while ((*u).is_neg()) {
+        *u = (*u) + (b / (*g));
+        *v = *v - (a / (*g));
+    }
+
+    result.push_back(*g);
+    result.push_back(*u);
+    result.push_back(*v);
+
+
+    delete u;
+    delete v;
+    delete g;
+    delete x;
+    delete y;
+    delete s;
+    delete q;
+    delete t;
+
+    return result;
+}
+
 // Overloaded Unary Operators
 
 LargeInteger LargeInteger::operator-() const {
