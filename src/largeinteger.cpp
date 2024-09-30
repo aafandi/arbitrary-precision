@@ -901,3 +901,68 @@ bool LargeInteger::operator!=(const LargeInteger &rhs) const {
         return true;
     }
 }
+
+std::string LargeInteger::to_binary() {
+    // Returns the binary bit string of the LargeInteger
+
+    // Deal with edge cases:
+
+    if (string_representation == "0") {
+        return "0";
+    }
+
+    std::string result = "";
+
+    LargeInteger *quotient {nullptr};
+    quotient = new LargeInteger;
+    *quotient = LargeInteger(string_representation);
+
+    LargeInteger *remainder {nullptr};
+    remainder = new LargeInteger;
+
+    while (*quotient != LargeInteger("0")) {
+       *remainder = long_division(*quotient, LargeInteger("2"))[1];
+       *quotient = long_division(*quotient, LargeInteger("2"))[0];
+       result += (*remainder).string_representation;
+    }
+
+    delete quotient;
+    delete remainder;
+
+    return result;
+}
+
+LargeInteger LargeInteger::exponentiate(LargeInteger exponent, LargeInteger modulus) {
+    // Returns g^(exponent) mod modulus
+
+    LargeInteger result = LargeInteger("1");
+
+    std::string *bitstring {nullptr};
+    bitstring = new std::string;
+    *bitstring = exponent.to_binary();
+
+    LargeInteger *previous_power {nullptr};
+    previous_power = new LargeInteger;
+    *previous_power = LargeInteger("1");
+    
+    LargeInteger *current_power {nullptr};
+    current_power = new LargeInteger;
+    *current_power = LargeInteger(string_representation);
+
+
+    for (int i = 0; i < (*bitstring).size(); i++) {
+        *current_power = ((*current_power) * (*previous_power)) % modulus;
+        *previous_power = *current_power % modulus;
+        if ((*bitstring)[i] == '1') {
+            result = (result * *current_power) % modulus;
+        } else {
+            continue;
+        }
+    }
+
+    delete bitstring;
+    delete previous_power;
+    delete current_power;
+
+    return result;
+}

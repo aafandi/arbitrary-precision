@@ -54,6 +54,10 @@ class LargeInteger {
         bool operator<=(const LargeInteger &rhs) const;
         bool operator>=(const LargeInteger &rhs) const;
         bool operator!=(const LargeInteger &rhs) const;
+
+        // Fast powering algorithm, mod N
+        std::string to_binary();
+        LargeInteger exponentiate(LargeInteger exponent, LargeInteger modulus);
 };
 
 #endif
