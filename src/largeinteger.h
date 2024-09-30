@@ -41,6 +41,7 @@ class LargeInteger {
         LargeInteger operator-(const LargeInteger &rhs) const;
         LargeInteger operator*(const LargeInteger &rhs) const;
         LargeInteger operator%(const LargeInteger &rhs) const;
+        LargeInteger operator/(const LargeInteger &rhs) const;
         bool operator<(const LargeInteger &rhs) const;
         bool operator==(const LargeInteger &rhs) const;
         bool operator>(const LargeInteger &rhs) const;

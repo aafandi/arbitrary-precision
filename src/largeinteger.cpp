@@ -641,121 +641,13 @@ LargeInteger LargeInteger::operator*(const LargeInteger &rhs) const {
 }
 
 LargeInteger LargeInteger::operator%(const LargeInteger &rhs) const {
-    LargeInteger L1 = LargeInteger(string_representation);
-    LargeInteger L2 = LargeInteger{rhs.string_representation};
-
-    // Some silly edge cases:
-    if (L2 == (LargeInteger("0"))) {
-        std::cerr << "No division by zero allowed" << std::endl;
-    } else if (L1.is_neg() || L2.is_neg()) {
-        std::cerr << "One of your LargeIntegers is negative. Why would you want to do that?" << std::endl;
-    } else if (L1 == LargeInteger("0")) {
-        return LargeInteger("0");
-    }
-
-    // Check if lhs and rhs are the same, of if the division is trivial:
-
-    if (L1 == L2) {
-        return LargeInteger("0");
-    } else if (L1 < L2) {
-        return L1;
-    }
-
-    // Can now assume lhs > rhs:
-    std::string *numerator {nullptr};
-    numerator = new std::string;
-    std::string *denominator {nullptr};
-    denominator = new std::string;
-    std::string *quotient {nullptr};
-    quotient = new std::string;
-    *quotient = "";
-    int *expected_length_of_quotient {nullptr};
-    expected_length_of_quotient = new int;
-    std::string *remainder {nullptr};
-    remainder = new std::string;
-
-    *numerator = L1.string_representation;
-    *denominator = L2.string_representation;
-
-    // Edge case: numerator and denominator have the same number of digits:
-
-    if ((*numerator).size() == (*denominator).size()) {
-        char *first_digit_numerator {nullptr};
-        first_digit_numerator = new char;
-        *first_digit_numerator = (*numerator)[0];
-        char *first_digit_denominator {nullptr};
-        first_digit_denominator = new char;
-        *first_digit_denominator = (*denominator)[0];
-        std::string *intermediate_mult {nullptr};
-        intermediate_mult = new std::string;
-
-        *quotient += std::to_string(from_char_to_int(*first_digit_numerator)/from_char_to_int(*first_digit_denominator));
-
-        *remainder = (L1 - (LargeInteger(*quotient) * L2)).get_string_representation();
-
-        delete first_digit_numerator;
-        delete first_digit_denominator;
-        delete numerator;
-        delete denominator;
-        delete quotient;
-
-        return LargeInteger(*remainder);
-    }
-
-    // Can now assume numerator has more digits than denominator.
-    // Assume denominator has n digits and numerator has m + n digits
-
-    int *n {nullptr};
-    n = new int;
-    *n = (*denominator).size();
-
-    int *m {nullptr};
-    m = new int;
-    *m = (*numerator).size() - *n;
-
-    // The expected length of the quotient is determined by the nature of the first division:
-    if (L2 <= LargeInteger((L1.string_representation).substr(0, *n))) {
-        *expected_length_of_quotient = *m + 1;
-    } else {
-        *expected_length_of_quotient = *m;
-    }
-
-    // Now perform the initial division:
-
-    
-
-    std::string *intermediate_numerator {nullptr};
-    intermediate_numerator = new std::string;
-    *intermediate_numerator = "";
-
-    // candidate_quotient plays the role of "q-hat" in Knuth's Algorithm D:
-    std::string *candidate_quotient {nullptr};
-    candidate_quotient = new std::string;
-
-    std::string *intermediate_mult {nullptr};
-    intermediate_mult = new std::string;
-
-    std::string *intermediate_quotient {nullptr};
-    intermediate_quotient = new std::string;
-
-    std::string *intermediate_subtr {nullptr};
-    intermediate_subtr = new std::string;
-    
-    delete intermediate_numerator;
-    delete candidate_quotient;
-    delete intermediate_mult;
-    delete intermediate_quotient;
-    delete intermediate_subtr;
-    delete expected_length_of_quotient;
-
-    delete n;
-    delete m;
-    delete numerator;
-    delete denominator;
-
-    return LargeInteger(*quotient);
-
+    return long_division(LargeInteger(string_representation), LargeInteger(rhs.string_representation))[1];
 }
+
+LargeInteger LargeInteger::operator/(const LargeInteger &rhs) const {
+    return long_division(LargeInteger(string_representation), LargeInteger(rhs.string_representation))[0];
+}
+    
 
 bool LargeInteger::operator<(const LargeInteger &rhs) const {
     LargeInteger L1 = LargeInteger(string_representation);
