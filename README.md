@@ -1,2 +1,2 @@
-# cryptography
-A C++ library for crytographic algorithms.
+# arbitrary precision
+A C++ library for arbitrary precision arithmetic.
