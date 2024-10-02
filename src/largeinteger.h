@@ -58,6 +58,12 @@ class LargeInteger {
         // Fast powering algorithm, mod N
         std::string to_binary();
         LargeInteger exponentiate(LargeInteger exponent, LargeInteger modulus);
+
+        // Primality Tests
+        bool fermat_test(int tests);
+        bool miller_rabin(LargeInteger n);
 };
+
+std::vector<int> random_slice(int depth);
 
 #endif

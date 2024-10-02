@@ -966,3 +966,79 @@ LargeInteger LargeInteger::exponentiate(LargeInteger exponent, LargeInteger modu
 
     return result;
 }
+
+bool LargeInteger::fermat_test(int tests) {
+    // Uses Fermat's Little Theorem to test for compositeness
+
+    bool result {};
+
+    LargeInteger *fermat_calculation {nullptr};
+    fermat_calculation = new LargeInteger;
+
+    if (tests < 1) {
+        std::cerr << "Must choose a positive number of tests" << std::endl;
+        exit(1);
+    }
+    std::vector<LargeInteger> *small_primes {nullptr};
+    small_primes = new std::vector<LargeInteger>;
+
+    (*small_primes).push_back(LargeInteger("2"));
+    (*small_primes).push_back(LargeInteger("3"));
+    (*small_primes).push_back(LargeInteger("5"));
+    (*small_primes).push_back(LargeInteger("7"));
+    (*small_primes).push_back(LargeInteger("11"));
+
+    for (auto l: *small_primes) {
+        if (LargeInteger(string_representation) == l) {
+            std::cout << "The integer " << string_representation << " is prime." << std::endl;
+            result = false;
+            return result;
+        }
+    }
+
+    for (auto l: *small_primes) {
+        if (LargeInteger(string_representation) % l == LargeInteger("0")) {
+            std::cout << "The integer " << string_representation << " is composite, it is divisible by " << l.string_representation << std::endl;
+            return true;
+        }
+    }
+
+    for (int a = 2; a < 2 + tests; a++) {
+        *fermat_calculation = LargeInteger(std::to_string(a)).exponentiate(LargeInteger(string_representation), LargeInteger(string_representation));
+        if (*fermat_calculation != LargeInteger(std::to_string(a))) {
+            std::cout << "The integer " << string_representation << " is composite because " << a << " is a Fermat witness" << std::endl;
+            result = true;
+            break;
+        }
+    }
+
+    result = false;
+
+    std::cout << "I couldn't find a Fermat witness after running " << tests << " tests. The integer " << string_representation << " may be prime." << std::endl;
+
+
+    delete small_primes;
+    delete fermat_calculation;
+
+    return result;
+}
+
+bool LargeInteger::miller_rabin(LargeInteger n) {
+    // Checks if n is a Miller-Rabin witness.
+
+    return true;
+    // Assume that n is less than the integer in question.
+
+
+}
+
+std::vector<int> random_slice(int depth) {
+    // An auxiliary function that randomly slices up the unit interval;
+    // use the the "slices" to sample numbers in large intervals
+
+    std::vector<int> result {};
+
+    
+
+    return result;
+}
