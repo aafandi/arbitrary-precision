@@ -105,4 +105,14 @@ Rational Rational::operator*(const Rational &rhs) const {
 
 }
 
+bool Rational::operator==(const Rational &rhs) const {
+    // Determines of two rational numbers are the same.
+
+    if ((numerator == rhs.numerator) && (denominator == rhs.denominator)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 

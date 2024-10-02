@@ -37,6 +37,7 @@ class Rational {
         // Overloaded Binary Operators
         Rational operator+(const Rational &rhs) const;
         Rational operator*(const Rational &rhs) const;
+        bool operator==(const Rational &rhs) const;
 };
 
 #endif 
