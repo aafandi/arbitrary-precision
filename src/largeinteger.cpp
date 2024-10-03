@@ -1,4 +1,6 @@
 #include "largeinteger.h"
+#include "randomrationals.h"
+#include "rational.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -1023,22 +1025,163 @@ bool LargeInteger::fermat_test(int tests) {
     return result;
 }
 
-bool LargeInteger::miller_rabin(LargeInteger n) {
-    // Checks if n is a Miller-Rabin witness.
+bool LargeInteger::miller_rabin_witness(LargeInteger a) {
+    // Checks if a is a Miller-Rabin witness to the compositeness of the odd integer LargeInteger = n in question.
 
-    return true;
-    // Assume that n is less than the integer in question.
+    bool result {};
+
+    // Check if a is trivially a witness i.e gcd(n, a) != 1 :
+    if ((gcd(LargeInteger(string_representation), a) != LargeInteger("1")) || (LargeInteger(string_representation) % LargeInteger("2") == LargeInteger("0"))) {
+        result = true;
+        return result;
+    }
+
+    // Can now assume that gcd(n, a) = 1 and n is odd.
+
+    // Compute k so that n - 1 = 2^k * q, where q is odd
+
+    LargeInteger *subtr_one {nullptr};
+    subtr_one = new LargeInteger;
+    *subtr_one = LargeInteger(string_representation) - LargeInteger("1");
+
+    LargeInteger *k {nullptr};
+    k = new LargeInteger;
+    *k = LargeInteger("0");
+
+    LargeInteger *q {nullptr};
+    q = new LargeInteger;
+    *q = *subtr_one;
+
+    LargeInteger *second_quantity {nullptr};
+    second_quantity = new LargeInteger;
+
+    while (*q % LargeInteger("2") == LargeInteger("0")) {
+        *k = *k + LargeInteger("1");
+        *q = long_division(*q, LargeInteger("2"))[0];
+    }
+
+    // Check the first Miller-Rabin condition:
+
+    if (a.exponentiate(*q, LargeInteger(string_representation)) == LargeInteger("1")) {
+        result = false;
+    } else {
+        result = true;
+    }
+
+    // Check the second Miller-Rabin condition:
+
+    *second_quantity = a.exponentiate(*q, LargeInteger(string_representation));
+
+    if (*second_quantity == LargeInteger("1") || *second_quantity == *subtr_one) {
+        result = false;
+    } 
+
+    for (int i = 1; i < to_base_ten((*k).string_representation); i++) {
+        if (result == false) {
+            break;
+        }
+        *second_quantity = ((*second_quantity) * (*second_quantity)) % LargeInteger(string_representation);
+        if (*second_quantity == *subtr_one) {
+            result = false;
+            break;
+        }
+    }
+    
+    delete subtr_one;
+    delete k;
+    delete q;
+    delete second_quantity;
+
+    return result;
+}
+
+bool LargeInteger::miller_rabin_test_verbose() {
+    // Runs the Miller-Rabin test on n; displays witnesses/non-witnesses to the user
+
+    bool result {};
+
+    // Make vector of small primes to deal with small inputs:
+
+    std::vector<LargeInteger> *small_primes {nullptr};
+    small_primes = new std::vector<LargeInteger>;
+
+    (*small_primes).push_back(LargeInteger("2"));
+    (*small_primes).push_back(LargeInteger("3"));
+    (*small_primes).push_back(LargeInteger("5"));
+    (*small_primes).push_back(LargeInteger("7"));
+    (*small_primes).push_back(LargeInteger("11"));
+    (*small_primes).push_back(LargeInteger("13"));
+    (*small_primes).push_back(LargeInteger("17"));
+    (*small_primes).push_back(LargeInteger("19"));
+    (*small_primes).push_back(LargeInteger("23"));
+    (*small_primes).push_back(LargeInteger("29"));
+    (*small_primes).push_back(LargeInteger("31"));
+    (*small_primes).push_back(LargeInteger("37"));
+    (*small_primes).push_back(LargeInteger("41"));
+    (*small_primes).push_back(LargeInteger("43"));
+    (*small_primes).push_back(LargeInteger("47"));
+    (*small_primes).push_back(LargeInteger("53"));
+    (*small_primes).push_back(LargeInteger("59"));
+    (*small_primes).push_back(LargeInteger("61"));
+    (*small_primes).push_back(LargeInteger("67"));
+    (*small_primes).push_back(LargeInteger("71"));
+    (*small_primes).push_back(LargeInteger("73"));
+    (*small_primes).push_back(LargeInteger("79"));
+    (*small_primes).push_back(LargeInteger("83"));
+    (*small_primes).push_back(LargeInteger("89"));
+    (*small_primes).push_back(LargeInteger("97"));
+
+    // Trivial Cases:
+
+    for (auto p: *small_primes) {
+        if (LargeInteger(string_representation) % p == LargeInteger("0")) {
+            result = true;
+            std::cout << "The integer " << string_representation << " is composite, it is divisible by " << p.string_representation << std::endl;
+            return result;
+        }
+    }
+
+    // Now assume the input is sufficiently large. 
+
+    // First, generate 50 random rational numbers < 1:
+
+    std::vector<Rational> *potential_witnesses {nullptr};
+    potential_witnesses = new std::vector<Rational>;
+    *potential_witnesses = random_rationals(50, 100, 100);
+
+    LargeInteger *potential_witness {nullptr};
+    potential_witness = new LargeInteger;
+
+    for (int i = 0; i < (*potential_witnesses).size(); i++) {
+        *potential_witness = ((*potential_witnesses)[i]).get_numerator() * (LargeInteger(string_representation) / ((*potential_witnesses)[i].get_denominator()));
+        if (LargeInteger(string_representation).miller_rabin_witness(*potential_witness) == true) {
+            std::cout << "The integer " << string_representation << " is composite, with Miller-Rabin witness " << (*potential_witness).string_representation << std::endl;
+            result = true;
+            return result;
+        }
+        (*potential_witnesses)[i] = Rational(*potential_witness, LargeInteger("1"));
+        std::cout << (*potential_witness).string_representation << " is not a witness" << std::endl;
+    }
+
+    result = false;
+
+    std::cout << "The 50 integers above are not Miller-Rabin witnesses to the compositeness of " << string_representation << std::endl;
+
+    std::cout << "The integer " << string_representation << " is likely prime" << std::endl;
+
+
+    delete small_primes;
+    delete potential_witnesses;
+
+    return result;
 
 
 }
 
-std::vector<int> random_slice(int depth) {
-    // An auxiliary function that randomly slices up the unit interval;
-    // use the the "slices" to sample numbers in large intervals
+bool LargeInteger::miller_rabin_test(LargeInteger n) {
+    return true;
+}
 
-    std::vector<int> result {};
-
-    
-
-    return result;
+LargeInteger LargeInteger::random_prime(int bitsize) {
+    return LargeInteger("1");
 }

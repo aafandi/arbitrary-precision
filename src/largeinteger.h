@@ -61,9 +61,10 @@ class LargeInteger {
 
         // Primality Tests
         bool fermat_test(int tests);
-        bool miller_rabin(LargeInteger n);
+        bool miller_rabin_witness(LargeInteger a);
+        bool miller_rabin_test_verbose();
+        bool miller_rabin_test(LargeInteger n);
+        LargeInteger random_prime(int bitsize);
 };
-
-std::vector<int> random_slice(int depth);
 
 #endif
