@@ -36,6 +36,9 @@ bool LargeInteger::is_non_neg() {
 // Static Methods
 
 long long int LargeInteger::to_base_ten(std::string s) {
+    // Takes a string repressentation of a long long int 
+    // and returns it as as long long int.
+
     int *size {nullptr};
     size = new int;
     *size = s.size();
@@ -52,10 +55,15 @@ long long int LargeInteger::to_base_ten(std::string s) {
 }
 
 int LargeInteger::from_char_to_int(char c) {
+    // Takes any character 0, 1,..., 9,
+    // and returns the corresponding int.
+
     return (int)(c) - 48;
 }
 
 std::string LargeInteger::string_of_zeroes(int n) {
+    // Returns the tring "000...0" that has n zeroes.
+
     std::string result = "";
     for (int i = 0; i < n; i++) {
         result += "0";
@@ -64,6 +72,9 @@ std::string LargeInteger::string_of_zeroes(int n) {
 }
 
 std::string LargeInteger::no_leading_zeroes(std::string s) {
+    // Takes a string, chops of any leading zeroes, 
+    // and returns the remaining substring.
+
     std::string result = s;
 
     while (result[0] == '0') {
@@ -494,16 +505,31 @@ LargeInteger LargeInteger::operator-() const {
 // Overloaded Binary Operators
 
 LargeInteger LargeInteger::operator+(const LargeInteger &rhs) const {
-    LargeInteger L1 = LargeInteger(string_representation);
-    LargeInteger L2 = LargeInteger(rhs.string_representation);
+    // Addition of LargeIntegers
 
-    if (L1.is_neg() && L2.is_non_neg()) {
-        return L2 - (-L1);
-    } else if (L1.is_non_neg() && L2.is_neg()) {
-        return L1 - (-L2);
-    } else if (L1.is_neg() && L2.is_neg()) {
-        return -((-L1) + (-L2));
+    // Code block below deals with the case 
+    // when one of the operands is negative.
+
+    LargeInteger *L1 {nullptr};
+    L1 = new LargeInteger;
+    *L1 = LargeInteger(string_representation);
+
+    LargeInteger *L2 {nullptr};
+    L2 = new LargeInteger;
+    *L2 = LargeInteger(rhs.string_representation);
+
+    if ((*L1).is_neg() && (*L2).is_non_neg()) {
+        return (*L2) - (-(*L1));
+    } else if ((*L1).is_non_neg() && (*L2).is_neg()) {
+        return (*L1) - (-(*L2));
+    } else if ((*L1).is_neg() && (*L2).is_neg()) {
+        return -((-(*L1)) + (-(*L2)));
     }
+
+    delete L1;
+    delete L2;
+
+    // Can now assume both operands are non-negative.
 
 
     int *size_1 {nullptr}; // size of the integer with more digits
